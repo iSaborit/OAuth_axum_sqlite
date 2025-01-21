@@ -1,0 +1,17 @@
+[package]
+name = "OAuth_axum_sqlite"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+axum = "0.8.1"
+axum-debug = "0.3.3"
+axum-macros = "0.5.0"
+chrono = { version = "0.4.39", features = ["serde"]}
+bcrypt = "0.16.0"
+dotenv = "0.15.0"
+serde = "1.0.217"
+serde_json = "1.0.137"
+sqlx = { version = "0.8.3", features = ["sqlite", "chrono", "runtime-tokio-native-tls" ] }
+tokio = { version = "1.43.0", features = ["full"] }
+uuid = { version = "1.12.1", features = ["v4"] }
