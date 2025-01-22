@@ -1,9 +1,15 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 pub struct User {
     pub id: Option<i64>,
     pub username: String,
     pub hash_passwd: String,
+}
+
+#[derive(Deserialize)]
+pub struct LogInSignUpRequest {
+    pub username: String,
+    pub password: String,
 }
 
 pub struct Token {
@@ -27,6 +33,6 @@ pub struct SendToken {
 pub enum AuthError {
     UsernameNotFound,
     IncorrectPassword,
-    CouldNotWriteToken(sqlx::Error)
+    CouldNotWriteToken(sqlx::Error),
+    CouldNotWriteUser(sqlx::Error),
 }
-

@@ -7,6 +7,8 @@ mod models;
 mod controllers;
 mod services;
 
+use controllers::{login, signup};
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
@@ -22,7 +24,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     
     let app = Router::new()
         .route("/", get(root))
-        .route("/login", post(controllers::login::login))
+        .route("/login", post(login))
+        .route("/signup", post(signup))
         .route("/logout", post("logging out..."))
         .route("/refresh-token", post("hello"))
         .route("/me", get("user searched"))
