@@ -1,16 +1,21 @@
 use std::{env, net::SocketAddr};
 
-use axum::{routing::{get, post}, Router};
+use axum::{http::Method, routing::{get, post}, Router};
 use sqlx::sqlite::SqlitePoolOptions;
+use tower_http::cors::{Any, CorsLayer};
 
 mod models;
 mod controllers;
 mod services;
 
-use controllers::{login, signup};
+use controllers::{login, logout, signup};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let cors = CorsLayer::new()
+        .allow_origin(Any) // Permite cualquier origen
+        .allow_methods([Method::GET, Method::POST]) // Métodos permitidos
+        .allow_headers(Any);
 
     dotenv::dotenv().ok();
     let db_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set.");
@@ -26,9 +31,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/", get(root))
         .route("/login", post(login))
         .route("/signup", post(signup))
-        .route("/logout", post("logging out..."))
+        .route("/logout", post(logout))
         .route("/refresh-token", post("hello"))
         .route("/me", get("user searched"))
+        .layer(cors)
         .with_state(pool);
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));

@@ -1,7 +1,8 @@
 pub(crate) mod authenticate_user;
 pub(crate) mod register_user;
+pub(crate) mod logout;
 
-use crate::models::{LogInSignUpRequest, SendToken, User};
+use crate::models::{LogInSignUpRequest, SendToken, Token, User};
 use sqlx::{query, query_as};
 
 async fn find_user_by_username(pool: &sqlx::sqlite::SqlitePool, username: &str) -> Option<User> {
@@ -15,7 +16,7 @@ async fn find_user_by_username(pool: &sqlx::sqlite::SqlitePool, username: &str) 
     }
 }
 
-async fn get_id_by_username(
+pub async fn get_id_by_username(
     pool: &sqlx::sqlite::SqlitePool,
     username: &str,
 ) -> Result<i64, sqlx::Error> {
@@ -46,19 +47,21 @@ async fn store_user_db(pool: &sqlx::sqlite::SqlitePool, user: &LogInSignUpReques
 
 async fn store_token_db(
     pool: &sqlx::sqlite::SqlitePool,
-    token: &SendToken,
+    token: &Token,
 ) -> Result<(), sqlx::Error> {
     query!(
         r#"
     INSERT INTO tokens 
     (user_id,
-    access_token,
+    client_access_token,
+    server_access_token,
     refresh_token,
     access_token_expiration,
     refresh_token_expiration)
-    VALUES (?, ?, ?, ?, ?)"#,
+    VALUES (?, ?, ?, ?, ?, ?)"#,
         token.user_id,
-        token.access_token,
+        token.client_access_token,
+        token.server_access_token,
         token.refresh_token,
         token.access_token_expiration,
         token.refresh_token_expiration

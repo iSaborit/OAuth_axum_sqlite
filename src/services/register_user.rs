@@ -2,7 +2,7 @@ use axum::http::StatusCode;
 use chrono::{Duration, Utc};
 use uuid::Uuid;
 
-use crate::models::{AuthError, LogInSignUpRequest, SendToken};
+use crate::models::{AuthError, LogInSignUpRequest, SendToken, Token};
 
 use super::{store_token_db, store_user_db};
 
@@ -20,20 +20,22 @@ pub async fn register_user(
         )
     })?;
 
-    let send_token = SendToken {
+    let token = Token {
+        id: -1,
         user_id: id,
-        access_token: Uuid::new_v4().to_string(),
+        client_access_token: Uuid::new_v4().to_string(),
+        server_access_token: Uuid::new_v4().to_string(),
         refresh_token: Uuid::new_v4().to_string(),
         access_token_expiration,
         refresh_token_expiration,
     };
 
-    store_token_db(pool, &send_token).await.map_err(|e| {
+    store_token_db(pool, &token).await.map_err(|e| {
         (
             StatusCode::INTERNAL_SERVER_ERROR,
             AuthError::CouldNotWriteToken(e),
         )
     })?;
 
-    Ok(send_token)
+    Ok(token.to_send_token())
 }

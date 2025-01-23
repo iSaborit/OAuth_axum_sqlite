@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login y Signup</title>
+</head>
+<body>
+  <h1>Login y Signup</h1>
+
+  <h2>Signup</h2>
+  <form id="signup-form">
+    <label for="signup-username">Username:</label>
+    <input type="text" id="signup-username" required>
+    <label for="signup-password">Password:</label>
+    <input type="password" id="signup-password" required>
+    <button type="submit">Signup</button>
+  </form>
+  <div id="signup-result"></div>
+
+  <h2>Login</h2>
+  <form id="login-form">
+    <label for="login-username">Username:</label>
+    <input type="text" id="login-username" required>
+    <label for="login-password">Password:</label>
+    <input type="password" id="login-password" required>
+    <button type="submit">Login</button>
+  </form>
+  <div id="login-result"></div>
+
+  <script>
+    const signupForm = document.getElementById("signup-form");
+    const loginForm = document.getElementById("login-form");
+    const signupResultDiv = document.getElementById("signup-result");
+    const loginResultDiv = document.getElementById("login-result");
+
+    async function handleFormSubmit(event, url, resultDiv) {
+      event.preventDefault();
+      const form = event.target;
+      const username = form.querySelector("input[type='text']").value;
+      const password = form.querySelector("input[type='password']").value;
+
+      const payload = { username, password };
+
+      console.log('JSON enviado al backend:', JSON.stringify(payload, null, 2));  // Imprimir el JSON enviado
+
+      try {
+        const response = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        });
+
+        // Verificar que la respuesta tiene el encabezado adecuado
+        const contentType = response.headers.get("Content-Type");
+        if (!contentType || !contentType.includes("application/json")) {
+          throw new Error(`Respuesta inesperada del servidor: ${contentType}`);
+        }
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          // Mostrar detalles completos del error en caso de que el servidor devuelva un error
+          const errorDetails = {
+            status: response.status,
+            statusText: response.statusText,
+            body: data,
+          };
+          throw new Error(`Error al realizar la solicitud: ${JSON.stringify(errorDetails, null, 2)}`);
+        }
+
+        resultDiv.innerHTML = `<pre style="color: green;">Success: ${JSON.stringify(data, null, 2)}</pre>`;
+      } catch (error) {
+        // Mostrar todos los detalles del error
+        resultDiv.innerHTML = `<pre style="color: red;">Error: ${error.message}</pre>`;
+      }
+    }
+
+    signupForm.addEventListener("submit", (event) => {
+      handleFormSubmit(event, "http://127.0.0.1:3000/signup", signupResultDiv);
+    });
+
+    loginForm.addEventListener("submit", (event) => {
+      handleFormSubmit(event, "http://127.0.0.1:3000/login?then_success=https://google.com&then_error=https://www.facebook.com", loginResultDiv);
+    });
+  </script>
+</body>
+</html>
+
