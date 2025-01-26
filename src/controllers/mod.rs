@@ -1,6 +1,6 @@
 use axum::{
     extract::{Query, State},
-    http::{Response, StatusCode},
+    http::StatusCode,
     response::{IntoResponse, Redirect},
     Json,
 };
@@ -9,7 +9,7 @@ use sqlx::SqlitePool;
 
 use crate::{
     models::{LogInSignUpRequest, Redirection, SendToken},
-    services::{authenticate_user, get_id_by_username, logout, register_user::register_user},
+    services::{authenticate_user, get_id_by_username, get_new_tokens, logout, register_user::register_user},
 };
 
 use self::logout::delete_tokens_id;
@@ -39,7 +39,6 @@ pub struct Username {
     username: String
 }
 
-#[axum_macros::debug_handler]
 pub async fn logout(
     State(pool): State<SqlitePool>,
     Json(payload): Json<Username>
@@ -56,6 +55,22 @@ pub async fn logout(
         }
     };
     Ok(StatusCode::OK)
+}
+
+#[derive(Deserialize)]
+pub struct RToken {
+    refresh_tkn: String
+}
+
+pub async fn refresh_token(
+    State(pool): State<SqlitePool>,
+    Json(payload): Json<RToken>
+) -> Result<impl IntoResponse, StatusCode> {
+    if let Ok(values) = get_new_tokens(&pool, &payload.refresh_tkn).await {
+        return Ok(values);
+    } else {
+        Err(StatusCode::UNAUTHORIZED)
+    }
 }
 
 pub async fn signup(

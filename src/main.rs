@@ -1,6 +1,7 @@
 use std::{env, net::SocketAddr};
 
-use axum::{http::Method, routing::{get, post}, Router};
+use axum::{http::Method, routing::{get, patch, post}, Router};
+use services::get_new_tokens;
 use sqlx::sqlite::SqlitePoolOptions;
 use tower_http::cors::{Any, CorsLayer};
 
@@ -8,7 +9,7 @@ mod models;
 mod controllers;
 mod services;
 
-use controllers::{login, logout, signup};
+use controllers::{login, logout, refresh_token, signup};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -32,7 +33,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/login", post(login))
         .route("/signup", post(signup))
         .route("/logout", post(logout))
-        .route("/refresh-token", post("hello"))
+        .route("/refresh-token", post(refresh_token))
         .route("/me", get("user searched"))
         .layer(cors)
         .with_state(pool);
